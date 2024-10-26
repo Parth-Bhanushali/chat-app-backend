@@ -4,27 +4,33 @@ interface IMessage extends mongoose.Document {
 	sender: mongoose.Types.ObjectId;
 	receiver: mongoose.Types.ObjectId;
 	content: string;
-	timestamp: Date;
+	status: 'sent' | 'delivered' | 'seen';
+	createdAt: Date;
 }
 
 const MessageSchema = new mongoose.Schema<IMessage>({
 	sender: { 
 		type: mongoose.Schema.Types.ObjectId, 
 		ref: "User", 
-		required: true 
+		required: true,
 	},
 	receiver: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "User",
-		required: true
+		required: true,
 	},
 	content: {
 		type: String,
-		required: true
+		required: true,
 	},
-	timestamp: {
+	status: {
+		type: String,
+		enum: ['sent', 'delivered', 'seen'],
+		default: 'sent',
+	},
+	createdAt: {
 		type: Date,
-		default: Date.now
+		default: Date.now,
 	}
 });
 

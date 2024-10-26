@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Message from "../models/Message";
-import { getSocket } from "../config/socket";
+import { getSocket } from "../sockets/socket";
 import User from "../models/User";
 
 const sendMessage = async (req: Request, res: Response) => {
@@ -14,17 +14,13 @@ const sendMessage = async (req: Request, res: Response) => {
 			sender,
 			receiver,
 			content,
+			status: 'sent',
 		})
 
-		await newMessage.save();
+		const savedMessage = await newMessage.save();
 
 		// @ts-ignore
-		getSocket().to([receiver, sender]).emit('receiveMessage', {
-			// @ts-ignore
-			sender,
-			receiver,
-			content,
-		});
+		getSocket().to([receiver, sender]).emit('receiveMessage', savedMessage);
 
 		res.status(201).json(newMessage);
 	} catch (error) {
@@ -75,7 +71,7 @@ const getContacts = async (req: Request, res: Response): Promise<void> => {
 
     const contacts = await User
 			.find({ _id: { $in: Array.from(contactIds) } })
-			.select('username _id');
+			.select('username fullName _id');
 
     res.json(contacts);
   } catch (error) {
