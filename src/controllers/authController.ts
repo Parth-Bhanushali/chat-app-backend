@@ -63,7 +63,7 @@ const refreshToken = async (req: Request, res: Response) => {
 				return;
 			}
 
-			const newAccessToken = generateAccessToken(user.userId);
+			const newAccessToken = generateAccessToken(user.id);
 			res.status(201).json({
 				accessToken: newAccessToken
 			})
