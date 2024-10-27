@@ -55,28 +55,14 @@ const getContacts = async (req: Request, res: Response): Promise<void> => {
 	// @ts-ignore
   const self = req.currentUser.id
 	try {
-    const messages = await Message.find({
-      $or: [
-        { sender: self },
-				{ receiver: self },
-      ],
-    });
+    // Fetch all users except the currently logged-in user
+    const users = await User.find({ _id: { $ne: self } })
+      .select('username fullName _id isOnline lastSeen');
 
-    const contactIds = new Set<string>();
-    messages.forEach(message => {
-			// @ts-ignore
-      const contactId = message.sender.equals(self) ? message.receiver : message.sender;
-      contactIds.add(contactId.toString());
-    });
-
-    const contacts = await User
-			.find({ _id: { $in: Array.from(contactIds) } })
-			.select('username fullName _id');
-
-    res.json(contacts);
+    res.json(users);
   } catch (error) {
-    console.error("Error fetching contacts:", error);
-    res.status(500).json({ message: "Couldn't fetch contacts" });
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Couldn't fetch users" });
   }
 };
 

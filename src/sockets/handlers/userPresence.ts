@@ -15,7 +15,7 @@ const userPresence = (
 	socket: Socket<CustomSocketEvents, CustomSocketEvents, DefaultEventsMap, any>, 
 ) => {
 	socket.on("registerUser", async (userId: string) => {
-		await User.findByIdAndUpdate(userId, { isOnline: true, lastSeen: null });
+		await User.findByIdAndUpdate(userId, { isOnline: true, lastSeen: new Date() });
 		socket.join(userId);
 		notifyUserStatusChange(userId, true, socket, undefined);
 		console.log('Joined: ' + userId);
