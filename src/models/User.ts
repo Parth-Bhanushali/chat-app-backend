@@ -29,6 +29,7 @@ const UserSchema = new mongoose.Schema<IUser>({
 	},
 	lastSeen: {
 		type: Date,
+		default: Date.now,
 	},
 	createdAt: {
 		type: Date,

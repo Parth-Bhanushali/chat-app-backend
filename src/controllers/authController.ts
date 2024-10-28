@@ -5,10 +5,20 @@ import jwt from "jsonwebtoken";
 import { generateAccessToken, generateRefreshToken } from "../utils/tokenUtils";
 
 const register = async (req: Request, res: Response) => {
-	const { username, password, fullName } = req.body;
+	let { username, password, fullName } = req.body;
 
 	try {
+		username = String(username).toLowerCase();
 		const hashedPassword = await bcrypt.hash(password, 10);
+		
+    const exists = await User.findOne({ username });
+    if (exists) {
+      res.status(400).json({
+        message: "User already exists with this username"
+      });
+			return;
+    }
+
 		const newUser = new User({ username, password: hashedPassword, fullName });
 		await newUser.save();
 		res.status(201).json({
@@ -22,21 +32,24 @@ const register = async (req: Request, res: Response) => {
 };
 
 const login = async (req: Request, res: Response) => {
-	const { username, password } = req.body;
-
+	let { username, password } = req.body;
+	
 	try {
+		username = String(username).toLowerCase();
+		
 		const user = await User.findOne({ username });
 		if (!user || !(await bcrypt.compare(password, user.password))) {
-			res.status(401).json({
+			res.status(500).json({
 				message: "Invalid credentials"
 			})
 			return;
 		}
 
+		const createdAt = user.createdAt;
 		const accessToken = generateAccessToken(String(user._id));
 		const refreshToken = generateRefreshToken(String(user._id));
 
-		res.status(200).json({ id: user.id, username: user.username, fullName: user.fullName, accessToken, refreshToken });
+		res.status(200).json({ id: user.id, username: user.username, fullName: user.fullName, createdAt, accessToken, refreshToken });
 	} catch (error) {
 		res.status(500).json({
 			message: "Couldn't log you in"
@@ -57,7 +70,7 @@ const refreshToken = async (req: Request, res: Response) => {
 
 		jwt.verify(refreshToken, process.env.JWT_SECRET!, (err: any, user: any) => {
 			if (err) {
-				res.status(401).json({
+				res.status(500).json({
 					message: 'Invalid token'
 				});
 				return;
