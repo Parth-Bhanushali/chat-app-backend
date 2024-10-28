@@ -4,6 +4,7 @@ declare global {
 			MONGO_DB_URI: string;
 			JWT_SECRET: string;
 			PORT: string;
+      SERVER: string;
     }
   }
 }
